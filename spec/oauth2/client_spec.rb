@@ -8,6 +8,7 @@ describe OAuth2::Client do
         stub.get('/success')      {|env| [200, {'Content-Type' => 'text/awesome'}, 'yay']}
         stub.get('/unauthorized') {|env| [401, {'Content-Type' => 'text/plain'}, 'not authorized']}
         stub.get('/conflict')    {|env| [409, {'Content-Type' => 'text/plain'}, 'not authorized']}
+        stub.get('/limit')    {|env| [403, {'Content-Type' => 'application/json; charset=utf8'}, '{\"error\":{\"message\":\"(#4) Application request limit reached\",\"type\":\"OAuthException\",\"code\":4}}']}
         stub.get('/redirect')     {|env| [302, {'Content-Type' => 'text/plain', 'location' => '/success' }, '']}
         stub.get('/error')        {|env| [500, {}, '']}
         stub.get('/json')         {|env| [200, {'Content-Type' => 'application/json; charset=utf8'}, '{"abc":"def"}']}
@@ -117,6 +118,13 @@ describe OAuth2::Client do
 
     it "raises OAuth2::HTTPError on error response" do
       lambda {subject.request(:get, '/error', {}, {})}.should raise_error(OAuth2::HTTPError)
+    end
+
+    context 'facebook limits' do
+      before { subject.json = true }
+      it 'raises OAuth2::FacebookLimitError' do
+        lambda {subject.request(:get, '/limit', {}, {})}.should raise_error(OAuth2::FacebookLimitError)
+      end
     end
   end
 

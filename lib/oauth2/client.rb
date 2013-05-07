@@ -73,6 +73,14 @@ module OAuth2
             e = OAuth2::AccessDenied.new("Received HTTP 401 during request.")
             e.response = resp
             raise e
+          when 403
+            e = if resp.body =~ /Application request limit reached/
+                  OAuth2::FacebookLimitError.new(resp.body)
+                else
+                  OAuth2::HTTPError.new("Received HTTP #{resp.status} during request.")
+                end
+            e.response = resp
+            raise e
           when 409
             e = OAuth2::Conflict.new("Received HTTP 409 during request.")
             e.response = resp

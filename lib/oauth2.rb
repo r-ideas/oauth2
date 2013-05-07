@@ -3,6 +3,7 @@ module OAuth2
   class AccessDenied < ErrorWithResponse; end
   class Conflict < ErrorWithResponse; end
   class HTTPError < ErrorWithResponse; end
+  class FacebookLimitError < ErrorWithResponse; end
 end
 
 require 'oauth2/client'
